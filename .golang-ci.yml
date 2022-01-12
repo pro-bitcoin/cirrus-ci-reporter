@@ -1,0 +1,13 @@
+linters-settings:
+  lll:
+    line-length: 150
+linters:
+  enable-all: true
+  disable:
+    - testpackage
+    - forbidigo
+    - paralleltest
+    - exhaustivestruct
+    - wsl
+    - gomnd
+    - varnamelen
