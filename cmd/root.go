@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -26,8 +27,9 @@ func newRootCmd(version string) *cobra.Command {
 	}
 
 	cmd.AddCommand(newVersionCmd(version)) // version subcommand
-	cmd.AddCommand(NewSetupCommand(), NewBuildsCommand())
+	cmd.AddCommand(NewSetupCommand(), NewSyncCommand())
 	cmd.PersistentFlags().StringVar(&config.DSN, "dsn", config.DSN, "database to connect")
+	cmd.PersistentFlags().StringVar(&config.Token, "token", os.Getenv("CIRRUS_TOKEN"), "Cirrus token https://cirrus-ci.org/api/#authorization")
 	cmd.PersistentFlags().BoolVarP(&config.Debug, "debug", "d", false, "debug")
 
 	return cmd

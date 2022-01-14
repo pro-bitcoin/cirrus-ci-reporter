@@ -3,7 +3,6 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/pro-bitcoin/cirrus-reporter/pkg/builds"
@@ -20,7 +19,6 @@ func NewBuildsCommand() *cobra.Command {
 			return getBuilds(c.Context(), *config)
 		},
 	}
-	cmd.Flags().StringVar(&config.Token, "token", os.Getenv("CIRRUS_TOKEN"), "Cirrus token https://cirrus-ci.org/api/#authorization")
 
 	return cmd
 }
