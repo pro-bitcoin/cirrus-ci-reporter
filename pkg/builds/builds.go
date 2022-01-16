@@ -68,47 +68,45 @@ func epochMSToTime(epoch string) time.Time {
 func Process(ctx context.Context, db *bun.DB, repoID uint64, edges []cirrus.Edge) error {
 	for _, edge := range edges {
 		n := edge.Node
-		if n.Status == "EXECUTING" || n.Status == "ABORTED" {
-			continue
-		}
-		bID, _ := strconv.ParseUint(string(n.ID), 10, 64)
-		bld := &cdb.Build{
-			ID:            bID,
-			RepoID:        repoID,
-			Repo:          nil,
-			Created:       epochToTime(n.BuildCreatedTimestamp),
-			Duration:      uint32(n.DurationInSeconds),
-			ClockDuration: uint32(n.ClockDurationInSeconds),
-			Branch:        string(n.Branch),
-			PullRequest:   uint(n.PullRequest),
-			Status:        string(n.Status),
-		}
-		_, err := db.NewInsert().Model(bld).Exec(ctx)
-		if err != nil {
-			return err
-		}
-		for _, task := range n.Tasks {
-			tID, _ := strconv.ParseUint(string(task.ID), 10, 64)
-			tsk := &cdb.Task{
-				ID:        tID,
-				BuildID:   bld.ID,
-				Build:     nil,
-				Name:      string(task.Name),
-				Duration:  uint32(task.DurationInSeconds),
-				Status:    string(task.Status),
-				Created:   epochToTime(task.CreationTimestamp),
-				Scheduled: epochToTime(task.ScheduledTimestamp),
-				Executing: epochToTime(task.ExecutingTimestamp),
+		if n.Status == "COMPLETED" || n.Status == "FAILED" {
+			bID, _ := strconv.ParseUint(string(n.ID), 10, 64)
+			bld := &cdb.Build{
+				ID:            bID,
+				RepoID:        repoID,
+				Repo:          nil,
+				Created:       epochToTime(n.BuildCreatedTimestamp),
+				Duration:      uint32(n.DurationInSeconds),
+				ClockDuration: uint32(n.ClockDurationInSeconds),
+				Branch:        string(n.Branch),
+				PullRequest:   uint(n.PullRequest),
+				Status:        string(n.Status),
 			}
-			if tsk.Status == "ABORTED" {
-				continue
-			}
-			_, err = db.NewInsert().Model(tsk).Exec(ctx)
+			_, err := db.NewInsert().Model(bld).Exec(ctx)
 			if err != nil {
 				return err
 			}
-			if err = processArtifacts(ctx, tID, task, db); err != nil {
-				return err
+			for _, task := range n.Tasks {
+				tID, _ := strconv.ParseUint(string(task.ID), 10, 64)
+				tsk := &cdb.Task{
+					ID:        tID,
+					BuildID:   bld.ID,
+					Build:     nil,
+					Name:      string(task.Name),
+					Duration:  uint32(task.DurationInSeconds),
+					Status:    string(task.Status),
+					Created:   epochToTime(task.CreationTimestamp),
+					Scheduled: epochToTime(task.ScheduledTimestamp),
+					Executing: epochToTime(task.ExecutingTimestamp),
+				}
+				if tsk.Status == "COMPLETED" || tsk.Status == "FAILED" {
+					_, err = db.NewInsert().Model(tsk).Exec(ctx)
+					if err != nil {
+						return err
+					}
+					if err = processArtifacts(ctx, tID, task, db); err != nil {
+						return err
+					}
+				}
 			}
 		}
 	}
