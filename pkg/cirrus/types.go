@@ -14,6 +14,7 @@ type ArtifactFile struct {
 
 type Artifact struct {
 	Type  graphql.String
+	Name  graphql.String
 	Files []ArtifactFile
 }
 
@@ -37,6 +38,7 @@ type Node struct {
 	PullRequest            graphql.Int
 	Tasks                  []Task
 	Status                 graphql.String
+	ChangeIdInRepo         graphql.String
 }
 
 type Edge struct {

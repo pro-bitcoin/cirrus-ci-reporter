@@ -19,7 +19,8 @@ type Build struct {
 	ClockDuration uint32
 	Branch        string `bun:",notnull"`
 	PullRequest   uint   `bun:",notnull"`
-	Status        string
+	Status        string `bun:",notnull"`
+	Commit        string `bun:",notnull"`
 }
 
 type Task struct {
@@ -37,6 +38,7 @@ type Task struct {
 type Artifact struct {
 	ID       uint64 `bun:"id,pk,unique:grp"`
 	TaskID   uint64 `bun:",notnull"`
+	Name     string `bun:",notnull"`
 	Task     *Task  `bun:"rel:belongs-to,join:task_id=id"`
 	Type     string `bun:",notnull"`
 	Location string `bun:",unique:grp"`

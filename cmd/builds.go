@@ -11,6 +11,8 @@ import (
 	"github.com/uptrace/bun"
 )
 
+var daysAgo int64 = 30
+
 func NewBuildsCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "builds",
@@ -19,7 +21,7 @@ func NewBuildsCommand() *cobra.Command {
 			return getBuilds(c.Context(), *config)
 		},
 	}
-
+	cmd.Flags().Int64Var(&daysAgo, "days-ago", 30, "start processing builds X days ago")
 	return cmd
 }
 
@@ -34,7 +36,7 @@ func getBuilds(ctx context.Context, cfg configOptions) error {
 		if err := pdb.NewSelect().Model(&lastBuild).Where("repo_id = ?", r.ID).Order("created DESC").Limit(1).Scan(ctx, &lastBuild); err != nil {
 			return err
 		}
-		after := time.Now().UTC().Add(-1 * (time.Hour * 24) * 30)
+		after := time.Now().UTC().Add(-1 * (time.Hour * 24) * time.Duration(daysAgo))
 		if len(lastBuild) > 0 {
 			after = lastBuild[0].Created
 		}

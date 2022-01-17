@@ -80,6 +80,7 @@ func Process(ctx context.Context, db *bun.DB, repoID uint64, edges []cirrus.Edge
 				Branch:        string(n.Branch),
 				PullRequest:   uint(n.PullRequest),
 				Status:        string(n.Status),
+				Commit:        string(n.ChangeIdInRepo),
 			}
 			_, err := db.NewInsert().Model(bld).Exec(ctx)
 			if err != nil {
@@ -119,6 +120,7 @@ func processArtifacts(ctx context.Context, taskID uint64, tsk cirrus.Task, db *b
 		for _, f := range a.Files {
 			art := &cdb.Artifact{
 				TaskID:   taskID,
+				Name:     string(a.Name),
 				Type:     string(a.Type),
 				Location: string(f.Path),
 			}
